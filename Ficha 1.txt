@@ -1,0 +1,48 @@
+X = 70
+N = 5
+
+Exercicio 1
+
+-->Ligar o Router ao PC
+R1>enable
+R1#config terminal
+R1(config) #interface ethernet0
+R1(config-if) #ip address 192.168.X.254 255.255.255.0
+R1(config-if) #no shutdown
+R1(config-if) #exit
+R1(config) #exit
+R1#config terminal
+R1(config) #service dhcp
+R1(config) #ip dhcp pool GRUPO-N
+R1(dhcp-config) #network 192.168.X.254 255.255.255.0
+R1(dhcp-config) #default-router 192.168.X.254
+R1(dhcp-config) #exit
+R1(config) #ip dhcp excluded-address 192.168.X.1 192.168.X.31
+R1(config) #ip dhcp excluded-address 192.168.X.224 192.168.X.254
+PC> ipconfig /all
+'''
+para reconfigurar a rede por algum possivel erro
+PC> ipconfig /release
+PC> ipconfig /renew
+'''
+PC> ping 192.168.X.254
+R1# show ip dhcp binding
+
+Exercicio 2
+R1#config terminal
+R1(config) #servide dhcp
+R1(config) #ip dhcp pool GRUPO-N
+R1(dhcp-config) #dns-server 192.168.X.31 10.254.0.252
+R1(dhcp-config) #domain-name net-N.dei.uc.pt
+R1(dhcp-config) #netbios-name-server 10.1.0.253
+
+Exercicio 3
+R1(dhcp-config) #lease 0 0 3
+R1(dhcp-config) #host (endereço PC random) 255.255.255.0
+R1# show ip dhcp binding
+
+Exercicio 4
+R1(dhcp-config) #lease 0 0 2
+
+R1#debug ip dhcp server event
+R1#debug ip dhcp server packet

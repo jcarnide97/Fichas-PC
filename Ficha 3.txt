@@ -1,0 +1,257 @@
+X = 10
+
+---EX1---
+
+!configurar pc's
+!host A 192.168.1.1 255.255.255.0
+!host B 192.168.4.1 255.255.255.0
+
+---R1----
+
+!R1>show version
+
+R1>enable
+
+!R1#show running-config 
+!R1#show startup-config
+
+R1#configure  
+Enter configuration commands, one per line. End with Ctrl-Z
+R1(config)#
+
+R1(config)#interface Ethernet0
+R1(config-if)#ip address 192.168.1.253 255.255.255.0 
+R1(config-if)#no shutdown
+R1(config-if)#exit
+R1(config)#exit
+
+R1(config)#interface FastEthernet0
+R1(config-if)#ip address 192.168.2.254 255.255.255.0 
+R1(config-if)#no shutdown
+R1(config-if)#exit
+R1(config)#exit
+
+!no router
+!ping 192.168.1.253
+!ping 192.168.2.254
+
+---R2----
+
+!R2>show version
+
+R2>enable
+
+!R2#show running-config 
+!R2#show startup-config
+
+R2#configure terminal
+Enter configuration commands, one per line. End with Ctrl-Z
+R2(config)#
+
+R2(config)#interface Ethernet0
+R2(config-if)#ip address 192.168.3.254 255.255.255.0 
+R2(config-if)#no shutdown
+R2(config-if)#exit
+R2(config)#exit
+
+R2(config)#interface FastEthernet0
+R2(config-if)#ip address 192.168.2.253 255.255.255.0 
+R2(config-if)#no shutdown
+R2(config-if)#exit
+R2(config)#exit
+
+!no router
+!ping 192.168.2.253
+!ping 192.168.3.254
+
+---R3----
+
+!R3>show version
+
+R3>enable
+
+!R3#show running-config 
+!R3#show startup-config
+
+R3#configure terminal
+Enter configuration commands, one per line. End with Ctrl-Z
+R3(config)#
+
+R3(config)#interface Ethernet0
+R3(config-if)#ip address 192.168.4.254 255.255.255.0 
+R3(config-if)#no shutdown
+R3(config-if)#exit
+R3(config)#exit
+
+R3(config)#interface FastEthernet0
+R3(config-if)#ip address 192.168.3.253 255.255.255.0 
+R3(config-if)#no shutdown
+R3(config-if)#exit
+R3(config)#exit
+
+!no router
+!ping 192.168.3.253
+!ping 192.168.4.254
+
+---------
+
+!no pc
+!host A ping 192.168.4.1
+!host B ping 192.168.1.1
+
+
+
+!Router>show interface ethernet0
+!Router#show ip interface ethernet0
+!Router#show ip interface brief
+
+---EX2---
+
+---R1----
+
+R1#show ip route
+
+---R2----
+
+R2#show ip route
+
+---R3----
+
+R3#show ip route
+
+---------
+
+---EX3---
+
+---R1----
+
+R1#configure terminal
+Enter configuration commands, one per line. End with Ctrl-Z
+
+R1(config)#ip route 192.168.3.0 255.255.255.0 192.168.2.253
+R1(config)#ip route 192.168.4.0 255.255.255.0 192.168.2.253
+
+R1#show ip route
+
+---R2----
+
+R2#configure terminal
+Enter configuration commands, one per line. End with Ctrl-Z
+
+R2(config)#ip route 192.168.1.0 255.255.255.0 192.168.2.254
+R2(config)#ip route 192.168.4.0 255.255.255.0 192.168.3.253
+
+R2#show ip route
+
+---R3----
+
+R3#configure terminal
+Enter configuration commands, one per line. End with Ctrl-Z
+
+R3(config)#ip route 192.168.1.0 255.255.255.0 192.168.3.254
+R3(config)#ip route 192.168.2.0 255.255.255.0 192.168.3.254
+
+R3#show ip route
+
+---------
+
+---EX4---
+
+---R1----
+
+R1#configure terminal
+Enter configuration commands, one per line. End with Ctrl-Z
+
+R1(config)#no ip route 192.168.3.0 255.255.255.0 192.168.2.253
+R1(config)#no ip route 192.168.4.0 255.255.255.0 192.168.2.253
+
+R1(config)#ip route 0.0.0.0 0.0.0.0 192.168.2.253
+
+
+R1#show ip route
+
+---R2----
+
+R2#configure terminal
+Enter configuration commands, one per line. End with Ctrl-Z
+
+R2(config)#no ip route 192.168.1.0 255.255.255.0 192.168.2.254
+R2(config)#no ip route 192.168.4.0 255.255.255.0 192.168.3.253
+
+R2(config)#ip route 0.0.0.0 0.0.0.0 192.168.2.254
+R2(config)#ip route 0.0.0.0 0.0.0.0 192.168.3.253
+
+R2#show ip route
+
+---R3----
+
+R3#configure terminal
+Enter configuration commands, one per line. End with Ctrl-Z
+
+R3(config)#no ip route 192.168.1.0 255.255.255.0 192.168.3.253
+R3(config)#no ip route 192.168.2.0 255.255.255.0 192.168.3.253
+
+R3(config)#ip route 0.0.0.0 0.0.0.0 192.168.3.253
+
+R3#show ip route
+
+---------
+
+---EX5---
+
+---R1----
+
+R1#show ip route
+
+R1#configure terminal
+Enter configuration commands, one per line. End with Ctrl-Z
+
+R1(config)#no ip route 0.0.0.0 0.0.0.0 192.168.2.253
+
+R1(config)#router rip 
+R1(config-router)#version 2 
+R1(config-router)#network 192.168.1.0 
+R1(config-router)#network 192.168.2.0 
+R1(config-router)#passive-interface Ethernet0 
+R1(config-router)#exit
+R1#
+
+R1#show ip route
+
+---R2----
+
+R2#show ip route
+
+R2#configure terminal
+Enter configuration commands, one per line. End with Ctrl-Z
+
+R2(config)#no ip route 0.0.0.0 0.0.0.0 192.168.2.253
+
+R2(config)#router rip 
+R2(config-router)#version 2 
+R2(config-router)#network 192.168.2.0 
+R2(config-router)#network 192.168.3.0  
+R2(config-router)#exit
+R2#
+
+R2#show ip route
+
+---R3----
+
+R3#show ip route
+
+R3#configure terminal
+Enter configuration commands, one per line. End with Ctrl-Z
+
+R3(config)#no ip route 0.0.0.0 0.0.0.0 192.168.2.253
+
+R3(config)#router rip 
+R3(config-router)#version 2 
+R3(config-router)#network 192.168.3.0 
+R3(config-router)#network 192.168.4.0  
+R1(config-router)#passive-interface Ethernet0 
+R3(config-router)#exit
+R3#
+
+R3#show ip route
+

@@ -1,0 +1,36 @@
+X = 70
+N = 5
+
+Exercicio 1
+--> Fazer as ligações entre PC, Router e Lab Server
+R1>enable
+R1#config t
+R1(config)#access-list 25 permit 192.168.X.0 0.0.0.255
+R1(config)#ip nat inside source list 25 interface FastEthernet0 overload
+R1(config)#interface Ethernet0
+R1(config-if)#ip address 192.168.X.254 255.255.255.0
+R1(config-if)#ip nat inside
+R1(config-if)#exit
+R1(config)#interface FastEthernet0
+R1(config-if)#ip address 10.254.0.N 255.255.255.0
+R1(config-if)#ip nat outside
+R1(config-if)#end
+(ir procurar ao pc a informação necessária para configurar com 192.168.X.100 Painel de Controlo -> Rede e Internet -> Internet -> Propriedades -> IPv4 - default gateway 192.168.70.254)
+PC>ping 10.254.0.254
+
+Exercicio 2
+R1>enable
+R1#config t
+R1(config)#ip nat inside source static 192.168.X.200 10.254.0.(N*16+1)
+R1(config)#ip nat pool net-TESTE 10.254.0(N*16+2) 10.254.0(N*16+5) netmask 255.255.255.0
+R1(config)#ip nat inside source list 25 pool net-TESTE overload
+R1(config)#access-list 25 deny 192.168.X.200 0.0.0.0
+(ir procurar ao pc a informação necessária para configurar com 192.168.X.200 Painel de Controlo -> Rede e Internet -> Internet -> Propriedades -> IPv4)
+PC>ping 10.254.0.254
+
+Exercicio 3
+R1>enable
+R1#config t
+R1(config)#ip nat pool net-TESTE 172.16.X.29 172.16.X.30 netmask 255.255.255.0
+R1(config)#ip nat inside source list 1 pool net-TESTE overload
+R1(config)#access-list 1 permit 192.168.X.0 0.0.0.255
