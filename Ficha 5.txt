@@ -1,0 +1,167 @@
+@Ficha 5 PC
+X = 150
+
+Esta ficha é relativamente simples, vão basicamente usar 4 PC's, ou seja, se ninguem faltar são 4 grupos e depois
+cada um configura o seu mas ajudam-se entre si e decidem os ip's a usar.
+A forma de decidir os ip's a usar é como quiserem, é usar a mesma logica da ficha passada, mas de qql forma 
+vou deixar aqui como nos fizemos, e lembrem-se que têm de apontar se é fast ethernet, ou ethernet normal etc.
+
+
+AS 1000		E 10.X.1.254		          	FE 10.X.1.2       AS X0
+	ROUTER -------------------------------------------------- ROUTER 
+     |								    |ISP2
+ISP1 | FE 172.16.X.254						    |E 172.30.X.254
+     |								    |
+     |								    |
+     |								    |
+     |								    |
+     |								    |
+     |								    |
+     |								    |
+     |								    |
+     |	FE 172.16.X.253						    | E 172.30.X.253
+     |								    |
+     ---------------------------------------------------------------- ROUTER R2
+    ROUTER	E 192.168.X.254 			FE 192.168.X.253
+ R1
+AS 3000
+
+
+Estes foi o nosso setup, e apartir daqui é ver se nao erraram nenhuma ligaçao e simplesmente ligar e configurar
+tudo igual à ficha.
+
+Exercicio 1:
+
+Router R1:
+
+enable
+config t
+
+interface Ethernet0
+ip address 192.168.X.254 255.255.255.0
+no shutdown
+
+interface FastEthernet0
+ip address 172.16.X.253 255.255.255.0
+no shutdown
+
+
+router ospf 100
+network 192.168.X.0 0.0.0.255 area 0
+
+router bgp 3000
+no synchronization
+bgp dampening
+redistribute ospf 100
+network 172.16.X.0 mask 255.255.255.0
+
+neighbor 172.16.X.254 remote-as 1000
+
+neighbor 192.168.X.253 remote-as 3000
+neighbor 192.168.X.253 next-hop-self
+
+no auto-summary
+##################################
+
+Router R2:
+
+
+enable
+config t
+
+interface Ethernet0
+ip address 172.30.X.253 255.255.255.0
+no shutdown
+
+interface FastEthernet0
+ip address 192.168.X.253 255.255.255.0
+no shutdown
+
+
+router ospf 100
+network 192.168.X.0 0.0.0.255 area 0
+
+router bgp 3000
+no synchronization
+bgp dampening
+redistribute ospf 100
+network 172.30.X.0 mask 255.255.255.0
+
+neighbor 172.30.X.254 remote-as 2000
+
+neighbor 192.168.X.254 remote-as 3000
+neighbor 192.168.X.254 next-hop-self
+
+no auto-summary
+##################################
+ISP1:
+
+config t
+interface Ethernet0
+ip address 10.X.1.254 255.255.255.0
+no shutdown
+
+interface FastEthernet0
+ip address 172.16.X.254 255.255.255.0
+no shutdown
+
+router bgp 1000
+synchronization // aqui nao sei se tá bem mas como só querem no sync nos routers devem ter que por isto
+bgp dampening
+network 172.16.X.0 mask 255.255.255.0
+no auto-summary
+neighbor 172.16.X.253 remote-as 3000 
+
+##################################
+ISP2:
+
+config t
+interface FastEthernet0
+ip address 10.X.1.253 255.255.255.0
+no shutdown
+
+interface  Ethernet0
+ip address 172.30.X.254 255.255.255.0
+no shutdown
+
+router bgp 2000
+synchronization // aqui nao sei se tá bem mas como só querem no sync nos routers devem ter que por isto
+bgp dampening
+network 172.30.X.0 mask 255.255.255.0
+no auto-summary
+neighbor 172.30.X.253 remote-as 3000 
+
+##################################
+
+Pronto, e depois é dar pings dentro do programa mesmo de uns pc's para os outros e ver se dá, em principio
+se os valores estiverem certos deve dar bem. Ele a nos pediu para mostrar a ip route e ip bgp e dizer qual a 
+principal diferença, e se virem a ip route apenas mostra uma rota para chegar ao destino, enquanto que a 
+ip bgp mostra TODAS as rotas possiveis, ou seja se tiverem no R1 para ire para ISP2 podem ir R1->R2->ISP2
+ou podem ir para R1->ISP1->ISP2, e ele mostra isso, ele mostra onde estão e depois o next-hop (ou seja,
+o proximo salto, que em para cada valor vai ter dois, porque ele pode sempre ir para dois sitios).
+
+Exericio 2:
+O ex2 é bue estupido, porque basicamente o que estão a fazer é a mudar a local preferencia de um router para ele
+seguir a outra rota, ou seja, para ir de R1 para ISP2 pode ir por dois caminhos (ver exemplo acima), então
+basicamente o que fazem é vao a um dos routers e aumentam ou diminuem a prefrencia (a default é 100, por isso
+se aumentarem num ele vai mais para esse mas se diminuirem no outro ele vai mais pelo outro).
+
+Pedem para ser em relaçao a ISP1, ou seja, se queremos que vai mais para ISP1 ou aumentamos a preferencia pelo R1
+ou diminuimos no R2, nos diminuimos no R2 porque é como está no enunciado.
+
+Então voltamos ao router R2 e fazemos:
+
+router bgp 3000
+neighbor 192.168.X.254 route-map PREF in
+route-map PREF permit 10
+set local-preference 1 // aqui metemos 1 mas pode ser o que vocês quiserem desde que seja menor que 100
+
+mas isto supostamente devia quando fizessem show ip bgp mostrar lá a localpref, mas nao mostra (o stor
+nao sabe explicar porque.....caguem), então o stor pediu para desligarmos a ligaçao R1 ISP1 e faze-lo 
+ir dar a volta ou a ligaçao R2 ISP2 e testar um ping, como é obvio deu sempre, mas isto nao prova nada
+porque se desligamos uma ligaçao é obvio que ele tendo duas e ficando com uma vai pela unica disponivel...
+Ou seja nao faço ideia como se prova o exercicio 2, a unica coisa é que podem mostrar é as configuraçoes
+e os pings funcionais, porque de resto nao sei mesmo, ele simplemenste viu que nao nos sabia explicar
+e mandou-nos embora.
+
+Pronto, é so isto, boa sorte e se encontrarem algum erro digam!
